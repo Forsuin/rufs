@@ -13,10 +13,11 @@ int main(int argc, char **argv)
     if (!std::ifstream(std::string(argv[1]) + ".dat").good())
     {
         std::ofstream(std::string(argv[1]) + ".dat").close();
-        std::cout << "created file" << std::endl;
+
+        // make sure root exists in new file
+        std::fstream fs(std::string(argv[1]) + ".dat", std::ios::in | std::ios::out | std::ios::binary);
+
+        fs.write("root\0\0\0\0.d\0", 11);
+        fs.close();
     }
-
-    std::fstream fs(argv[1], std::ios::in | std::ios::out | std::ios::binary);
-
-    fs.write("root\0\0\0\0.d\0", 11);
 }
