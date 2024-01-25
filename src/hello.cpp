@@ -15,4 +15,8 @@ int main(int argc, char **argv)
         std::ofstream(std::string(argv[1]) + ".dat").close();
         std::cout << "created file" << std::endl;
     }
+
+    std::fstream fs(argv[1], std::ios::in | std::ios::out | std::ios::binary);
+
+    fs.write("root\0\0\0\0.d\0", 11);
 }
