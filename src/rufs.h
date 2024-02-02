@@ -1,43 +1,48 @@
 #include <string>
-#include <vector>
-#include <fstream>
 
-struct Name
+struct Filable
 {
+    enum Type
+    {
+        Text,
+        Program,
+        Directory
+    };
+    Type type;
+
     char name[11];
-};
 
-struct File
-{
-    Name name;
-
-    union Type
+    union Contents
     {
         struct Text
         {
-            int size;
-            std::string contents;
-        };
+            std::string text_data;
+        } text;
 
         struct Program
         {
-            int cpuReq;
-            int memReq;
-        };
-    };
+            int cpu_req;
+            int mem_req;
+        } program;
+
+        struct Directory
+        {
+            int size;
+        } dir;
+    } contents;
 };
 
-struct Directory;
+/*
+    Writes a file into filesystem
+*/
+void create_file(std::string fs_name, Filable file);
 
-union DirContents
-{
-    File file;
-    Directory dir;
-};
+/*
+    Creates a new directory of the filesystem
+*/
+void create_dir(std::string fs_name);
 
-struct Directory
-{
-    Name name;
-    int numContents;
-    std::vector<DirContents> contents;
-};
+/*
+    Closes a directory
+*/
+void end_dir(std::string fs_name, std::string dir_name);
