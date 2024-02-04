@@ -1,8 +1,16 @@
 #include <string>
 
+/*
+ * In Rust I would have made this an enum and added a write member function
+ *
+ * I was going to write a c++11 implementation of std::variant but that
+ * didn't work out since c++11 doesn't support template initializer lists or
+ * something like that and this was easier since I'm only going to have 3
+ * things that can get written to disk
+*/
 struct Filable
 {
-    enum Type
+    enum class Type
     {
         Text,
         Program,
@@ -14,33 +22,39 @@ struct Filable
 
     union Contents
     {
-        struct Text
-        {
-            std::string text_data;
-        } text;
+        std::string text_data;
 
-        struct Program
+        struct ProgramData
         {
             int cpu_req;
             int mem_req;
         } program;
 
-        struct Directory
-        {
-            int size;
-        } dir;
+        int dir_size;
+
+        Contents() {}
+        Contents(const Filable::Contents& content) {}
+        ~Contents() {}
     } contents;
+
+    Filable(){}
+    Filable(const Filable& filable): type(filable.type), contents(filable.contents){
+        for(int i = 0; i < 11; i++) {
+            name[i] = filable.name[i];
+        }
+    }
+    ~Filable(){}
 };
 
 /*
     Writes a file into filesystem
 */
-void create_file(std::string fs_name, Filable file);
+void write_file(const std::string& fs_name, Filable file);
 
 /*
     Creates a new directory of the filesystem
 */
-void create_dir(std::string fs_name);
+void create_dir(std::string fs_name, std::string dir_name);
 
 /*
     Closes a directory

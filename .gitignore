@@ -2,3 +2,4 @@
 build/*
 rufs
 *.dat
+.idea
