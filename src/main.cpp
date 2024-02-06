@@ -18,7 +18,6 @@ int main(int argc, char **argv)
     {
         std::ofstream(fs_name).close();
 
-
         std::string root = "root\0\0\0\0";
         create_dir(fs_name, root);
     }
@@ -29,21 +28,25 @@ int main(int argc, char **argv)
     bool close = false;
 
     std::string input;
-    while (!close) {
+    while (!close)
+    {
         std::cout << "Command> ";
         std::cin >> input;
 
-        if (input == "CreateDir") {
+        if (input == "CreateDir")
+        {
             std::cout << "Enter directory name: ";
             std::cin >> input;
 
             bool bad_dirname = false;
 
-            do {
-                //reset each loop
+            do
+            {
+                // reset each loop
                 bad_dirname = false;
 
-                if (input.length() > 8) {
+                if (input.length() > 8)
+                {
                     std::cout << "Invalid directory, can only be 8 characters long" << std::endl;
                     bad_dirname = true;
 
@@ -53,26 +56,32 @@ int main(int argc, char **argv)
             } while (bad_dirname);
 
             create_dir(fs_name, input);
-        } else if (input == "CreateFile") {
+        }
+        else if (input == "CreateFile")
+        {
             bool bad_filename = false;
 
-            do {
+            do
+            {
                 // reset each loop
                 bad_filename = false;
 
                 std::cout << "Enter filename: ";
                 std::cin >> input;
 
-                if (input.length() > 8) {
+                if (input.length() > 8)
+                {
                     std::cout << "Invalid filename, must be 11 characters long or less" << std::endl;
                     bad_filename = true;
                 }
-                else if (input[input.size() - 2] != '.' && (input.back() != 't' || input.back() != 'p')) {
+                else if (input[input.size() - 2] != '.' && (input.back() != 't' || input.back() != 'p'))
+                {
                     std::cout << "Invalid file extension" << std::endl;
                     bad_filename = true;
                 }
 
-                if (bad_filename) {
+                if (bad_filename)
+                {
                     std::cout << "Enter filename: ";
                     std::cin >> input;
                 }
@@ -80,19 +89,29 @@ int main(int argc, char **argv)
 
             // Good filename now, guaranteed to be text or program
 
-            Filable::Type fileType = (input.back() == 't' ? Filable::Type::Text : Filable::Type::Program);
+            // Filable::Type fileType = (input.back() == 't' ? Filable::Type::Text : Filable::Type::Program);
 
             Filable file;
-            file.type = fileType;
+            if (input.back() == 't')
+            {
+                file.contents.set<TextFile>();
+            }
+            else
+            {
+                file.contents.set<ProgramFile>();
+            }
 
             //
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < 8; i++)
+            {
                 file.name[i] = '\0';
             }
 
             // Getting filename
-            for (int i = 0;; i++) {
-                if (input[i] == '.') {
+            for (int i = 0;; i++)
+            {
+                if (input[i] == '.')
+                {
                     break;
                 }
                 file.name[i] = input[i];
@@ -100,34 +119,52 @@ int main(int argc, char **argv)
 
             file.name[8] = '.';
 
-            if (file.type == Filable::Type::Text) {
+            if (file.contents.is<TextFile>())
+            {
 
                 file.name[9] = 't';
             }
-            else {
+            else
+            {
                 file.name[9] = 'p';
             }
             file.name[10] = '\0';
 
             // Getting file contents
-            if (file.type == Filable::Type::Text) {
+            if (file.contents.is<TextFile>())
+            {
 
                 std::cout << "Enter contents: ";
+                // consume newline
                 std::cin >> input;
-                file.contents.text_data = input;
-            } else {
+                getline(std::cin, input);
+                file.contents.set<TextFile>(TextFile{input});
+            }
+            else
+            {
+                int mem_req;
+                int cpu_req;
+
                 std::cout << "Enter CPU requirements: ";
-                std::cin >> file.contents.program.cpu_req;
+                std::cin >> cpu_req;
 
                 std::cout << "Enter memory requirements: ";
-                std::cin >> file.contents.program.mem_req;
+                std::cin >> mem_req;
+
+                file.contents.set<ProgramFile>(ProgramFile{cpu_req, mem_req});
             }
 
             write_file(fs_name, file);
-        } else if (input == "EndDir") {
-        } else if (input == "quit") {
+        }
+        else if (input == "EndDir")
+        {
+        }
+        else if (input == "quit")
+        {
             close = true;
-        } else {
+        }
+        else
+        {
             std::cout << "Invalid command" << std::endl;
         }
     }

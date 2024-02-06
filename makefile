@@ -2,7 +2,7 @@ CC := g++
 
 STD := -std=c++11
 
-CFLAGS := -g -Wall -Wextra -Wpedantic $(STD)
+CFLAGS := -g -Wall -Wextra $(STD)
 
 SRC_DIR := src
 BUILD_DIR := build
