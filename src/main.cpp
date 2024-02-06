@@ -11,15 +11,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::string fs_name = std::string(argv[1]) + ".dat";
+    Filesystem fs(std::string(argv[1]) + ".dat");
 
     // create file if it doesn't already exist
-    if (!std::ifstream(fs_name).good())
+    if (!std::ifstream(fs.name).good())
     {
-        std::ofstream(fs_name).close();
+        std::ofstream(fs.name).close();
 
         std::string root = "root\0\0\0\0";
-        create_dir(fs_name, root);
+        fs.create_dir(root);
     }
 
     std::cout << "Welcome to RUFS. Enter one of the following commands: " << std::endl;
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
                 }
             } while (bad_dirname);
 
-            create_dir(fs_name, input);
+            fs.create_dir(input);
         }
         else if (input == "CreateFile")
         {
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 
                 std::cout << "Enter contents: ";
                 // consume newline
-                std::cin >> input;
+                std::cin.ignore();
                 getline(std::cin, input);
                 file.contents.set<TextFile>(TextFile{input});
             }
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
                 file.contents.set<ProgramFile>(ProgramFile{cpu_req, mem_req});
             }
 
-            write_file(fs_name, file);
+            fs.write_file(file);
         }
         else if (input == "EndDir")
         {

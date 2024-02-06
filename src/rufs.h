@@ -1,4 +1,5 @@
 #include <string>
+#include <stack>
 
 #include "variant.h"
 
@@ -34,17 +35,27 @@ struct Filable
     variant<ProgramFile, TextFile, Directory> contents;
 };
 
-/*
+struct Filesystem {
+private:
+    std::stack<Filable> dirStack;
+
+public:
+    std::string name;
+
+    /*
     Writes a file into filesystem
 */
-void write_file(const std::string &fs_name, Filable &file);
+    void write_file(Filable &file);
 
 /*
     Creates a new directory of the filesystem
 */
-void create_dir(const std::string &fs_name, std::string dir_name);
+    void create_dir(const std::string &dir_name);
 
 /*
     Closes a directory
 */
-void end_dir(std::string fs_name, std::string dir_name);
+    void end_dir(const std::string &dir_name);
+
+    Filesystem(const std::string& name) : name(name) {}
+};

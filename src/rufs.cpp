@@ -1,20 +1,15 @@
 #include <fstream>
-#include <stack>
-
-#include <variant>
 
 #include "rufs.h"
-
-std::stack<Filable> dirStack;
 
 // Will replace once working, only temporary
 #define text_data get<TextFile>().data
 #define program get<ProgramFile>()
 #define dir_size get<Directory>().size
 
-void write_file(const std::string &fs_name, Filable &file)
+void Filesystem::write_file(Filable &file)
 {
-    std::ofstream fs(fs_name, std::ios::binary | std::ios::app);
+    std::ofstream fs(name, std::ios::binary | std::ios::app);
 
     // shared between all 'file' types, no need to be in switch
     fs.write(file.name, sizeof(file.name));
@@ -22,6 +17,7 @@ void write_file(const std::string &fs_name, Filable &file)
     if (file.contents.is<TextFile>())
     {
         fs.write(file.contents.text_data.c_str(), file.contents.text_data.length());
+        fs.write("\0", 1);
     }
     else if (file.contents.is<ProgramFile>())
     {
@@ -34,7 +30,7 @@ void write_file(const std::string &fs_name, Filable &file)
     }
 }
 
-void create_dir(const std::string &fs_name, std::string dir_name)
+void Filesystem::create_dir(const std::string &dir_name)
 {
     Filable new_dir;
 
@@ -54,9 +50,9 @@ void create_dir(const std::string &fs_name, std::string dir_name)
 
     new_dir.contents.set<Directory>(Directory{69});
 
-    write_file(fs_name, new_dir);
+    write_file(new_dir);
 }
 
-void end_dir(const std::string &fs_name, const std::string &dir_name)
+void Filesystem::end_dir(const std::string &dir_name)
 {
 }
