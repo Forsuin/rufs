@@ -113,7 +113,8 @@ int main(int argc, char **argv)
             if (file.type == Filable::Type::Text) {
 
                 std::cout << "Enter contents: ";
-                std::cin >> file.contents.text_data;
+                std::cin >> input;
+                file.contents.text_data = input;
             } else {
                 std::cout << "Enter CPU requirements: ";
                 std::cin >> file.contents.program.cpu_req;

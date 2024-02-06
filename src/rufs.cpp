@@ -1,10 +1,11 @@
 #include <fstream>
+#include <stack>
 
 #include "rufs.h"
 
+std::stack<Filable> dirStack;
 
-
-void write_file(const std::string& fs_name, Filable file)
+void write_file(const std::string& fs_name, Filable& file)
 {
     std::ofstream fs(fs_name, std::ios::binary | std::ios::app);
 
@@ -20,32 +21,34 @@ void write_file(const std::string& fs_name, Filable file)
             fs.write((char *)&file.contents.program.mem_req, sizeof(int));
             break;
         case Filable::Type::Directory:
-            fs.write((const char *)file.contents.dir_size, sizeof(file.contents.dir_size));
+            fs.write((char *)&file.contents.dir_size, sizeof(file.contents.dir_size));
             break;
     }
 }
 
-void create_dir(std::string fs_name, std::string dir_name)
+void create_dir(const std::string& fs_name, std::string dir_name)
 {
     Filable new_dir;
     new_dir.type = Filable::Type::Directory;
 
-    for (int i = 0; i < 11; i++) {
-        new_dir.name[i] = '\0';
+    for (char & i : new_dir.name) {
+        i = '\0';
     }
 
-    for (int i = 0; i < dir_name.length(); i++) {
+    for (unsigned int i = 0; i < dir_name.length(); i++) {
         new_dir.name[i] = dir_name[i];
     }
 
     new_dir.name[8] = '.';
     new_dir.name[9] = 'd';
+    new_dir.name[10] = '\0';
 
     new_dir.contents.dir_size = 69;
 
     write_file(fs_name, new_dir);
 }
 
-void end_dir(std::string fs_name, std::string dir_name)
+void end_dir(const std::string& fs_name, const std::string& dir_name)
 {
+
 }

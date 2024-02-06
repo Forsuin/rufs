@@ -1,5 +1,7 @@
 #include <string>
 
+#include "variant.h"
+
 /*
  * In Rust I would have made this an enum and added a write member function
  *
@@ -8,6 +10,7 @@
  * something like that and this was easier since I'm only going to have 3
  * things that can get written to disk
 */
+
 struct Filable
 {
     enum class Type
@@ -30,7 +33,7 @@ struct Filable
             int mem_req;
         } program;
 
-        int dir_size;
+        uint32_t dir_size;
 
         Contents() {}
         Contents(const Filable::Contents& content) {}
@@ -38,9 +41,24 @@ struct Filable
     } contents;
 
     Filable(){}
-    Filable(const Filable& filable): type(filable.type), contents(filable.contents){
+    Filable(const Filable& filable): type(filable.type){
         for(int i = 0; i < 11; i++) {
             name[i] = filable.name[i];
+        }
+
+        switch (filable.type) {
+            case Filable::Type::Text: {
+                contents.text_data = "a";
+                break;
+            }
+            case Filable::Type::Program: {
+                this->contents.program = filable.contents.program;
+                break;
+            }
+            case Filable::Type::Directory: {
+                this->contents.dir_size = filable.contents.dir_size;
+                break;
+            }
         }
     }
     ~Filable(){}
@@ -49,12 +67,12 @@ struct Filable
 /*
     Writes a file into filesystem
 */
-void write_file(const std::string& fs_name, Filable file);
+void write_file(const std::string& fs_name, Filable& file);
 
 /*
     Creates a new directory of the filesystem
 */
-void create_dir(std::string fs_name, std::string dir_name);
+void create_dir(const std::string& fs_name, std::string dir_name);
 
 /*
     Closes a directory
