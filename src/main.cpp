@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     {
         std::ofstream(fs.name).close();
 
-        std::string root = "root\0\0\0\0";
+        std::string root = "root";
         fs.create_dir(root);
     }
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
                     std::cout << "Invalid directory, can only be 8 characters long" << std::endl;
                     bad_dirname = true;
 
-                    std::cout << "Enter filename: ";
+                    std::cout << "Enter directory name: ";
                     std::cin >> input;
                 }
             } while (bad_dirname);
@@ -65,25 +65,26 @@ int main(int argc, char **argv)
             {
                 // reset each loop
                 bad_filename = false;
+                input.clear();
 
                 std::cout << "Enter filename: ";
                 std::cin >> input;
 
-                if (input.length() > 8)
+                // 10 because null character at end
+                if (input.length() > 10)
                 {
-                    std::cout << "Invalid filename, must be 11 characters long or less" << std::endl;
+                    std::cout << "Invalid filename, must be 10 characters long or less" << std::endl;
                     bad_filename = true;
                 }
-                else if (input[input.size() - 2] != '.' && (input.back() != 't' || input.back() != 'p'))
+                else if (input[input.length() - 2] != '.')
+                {
+                    std::cout << "Missing file extension" << std::endl;
+                    bad_filename = true;
+                }
+                else if (input.back() != 't' && input.back() != 'p')
                 {
                     std::cout << "Invalid file extension" << std::endl;
                     bad_filename = true;
-                }
-
-                if (bad_filename)
-                {
-                    std::cout << "Enter filename: ";
-                    std::cin >> input;
                 }
             } while (bad_filename);
 
@@ -158,9 +159,11 @@ int main(int argc, char **argv)
         }
         else if (input == "EndDir")
         {
+            fs.end_dir();
         }
         else if (input == "quit")
         {
+            fs.close_dirs();
             close = true;
         }
         else

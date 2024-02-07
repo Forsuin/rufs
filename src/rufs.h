@@ -1,3 +1,5 @@
+
+
 #include <string>
 #include <stack>
 
@@ -35,9 +37,16 @@ struct Filable
     variant<ProgramFile, TextFile, Directory> contents;
 };
 
-struct Filesystem {
+struct DirIndexPair
+{
+    Filable dir;
+    int index;
+};
+
+struct Filesystem
+{
 private:
-    std::stack<Filable> dirStack;
+    std::stack<DirIndexPair> dirStack;
 
 public:
     std::string name;
@@ -47,15 +56,20 @@ public:
 */
     void write_file(Filable &file);
 
-/*
-    Creates a new directory of the filesystem
-*/
+    /*
+        Creates a new directory of the filesystem
+    */
     void create_dir(const std::string &dir_name);
 
-/*
-    Closes a directory
-*/
-    void end_dir(const std::string &dir_name);
+    /*
+        Closes most recent directory
+    */
+    void end_dir();
 
-    Filesystem(const std::string& name) : name(name) {}
+    /*
+        Closes any directories that are still open
+    */
+    void close_dirs();
+
+    Filesystem(const std::string &name) : name(name) {}
 };
