@@ -23,6 +23,7 @@ struct ProgramFile
 struct TextFile
 {
     std::string data;
+    int size;
 };
 
 struct Directory
@@ -70,6 +71,11 @@ public:
         Closes any directories that are still open
     */
     void close_dirs();
+
+    /*
+        Print out the contents of the filesystem
+    */
+    void print();
 
     Filesystem(const std::string &name) : name(name) {}
 };

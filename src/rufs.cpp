@@ -2,11 +2,6 @@
 
 #include "rufs.h"
 
-// Will replace once working, only temporary
-#define text_data get<TextFile>().data
-#define program get<ProgramFile>()
-#define dir_size get<Directory>().size
-
 void Filesystem::write_file(Filable &file)
 {
     std::ofstream fs(name, std::ios::binary | std::ios::app);
@@ -15,22 +10,26 @@ void Filesystem::write_file(Filable &file)
     // shared between all 'file' types, no need to be in switch
     fs.write(file.name, sizeof(file.name));
 
+    if (!dirStack.empty())
+    {
+        // Add item to current dir counter
+        dirStack.top().dir.contents.set<Directory>(Directory{dirStack.top().dir.contents.get<Directory>().size + 1});
+    }
+
     if (file.contents.is<TextFile>())
     {
-        dirStack.top().dir.contents.set<Directory>(Directory{dirStack.top().dir.contents.dir_size + 1});
-        fs.write(file.contents.text_data.c_str(), file.contents.text_data.length());
-        fs.write("\0", 1);
+        fs.write((char *)&file.contents.get<TextFile>().size, sizeof(int));
+        fs.write(file.contents.get<TextFile>().data.c_str(), file.contents.get<TextFile>().data.length());
     }
     else if (file.contents.is<ProgramFile>())
     {
-        dirStack.top().dir.contents.set<Directory>(Directory{dirStack.top().dir.contents.dir_size + 1});
-        fs.write((char *)&file.contents.program.cpu_req, sizeof(int));
-        fs.write((char *)&file.contents.program.mem_req, sizeof(int));
+        fs.write((char *)&file.contents.get<ProgramFile>().cpu_req, sizeof(int));
+        fs.write((char *)&file.contents.get<ProgramFile>().mem_req, sizeof(int));
     }
     else
     {
         dirStack.push({file, fs.tellp()});
-        fs.write((char *)&file.contents.dir_size, sizeof(file.contents.dir_size));
+        fs.write((char *)&file.contents.get<Directory>().size, sizeof(file.contents.get<Directory>().size));
     }
 }
 
@@ -61,14 +60,14 @@ void Filesystem::end_dir()
 {
     std::fstream fs(name, std::ios::binary | std::ios::out | std::ios::in | std::ios_base::ate);
     int num_contents_loc = dirStack.top().index;
-    int num_contents = dirStack.top().dir.contents.dir_size;
-    std::string end_name = "End" + std::string(dirStack.top().dir.name) + ".d";
+    int num_contents = dirStack.top().dir.contents.get<Directory>().size;
 
     fs.seekp(num_contents_loc);
     fs.write((char *)&num_contents, sizeof(int));
 
     fs.seekg(0, std::ios::end);
-    fs.write((char *)end_name.c_str(), end_name.length());
+    fs.write("End", 3);
+    fs.write(dirStack.top().dir.name, 11);
 
     dirStack.pop();
 }
@@ -78,5 +77,119 @@ void Filesystem::close_dirs()
     while (!dirStack.empty())
     {
         end_dir();
+    }
+}
+
+void print_directory()
+{
+}
+
+void Filesystem::print()
+{
+    std::cout << "Binary file structure is: " << std::endl;
+
+    std::ifstream fs(name, std::ios::in | std::ios::binary);
+
+    if (!fs.is_open())
+    {
+        std::cout << "Unable to open file" << std::endl;
+        return;
+    }
+
+    while (fs.peek() != EOF)
+    {
+
+        if (fs.peek() == 'E')
+        {
+            // TODO: Handle end of directories
+            char end_dir[14];
+
+            int index = fs.tellg();
+
+            fs.read(end_dir, 14);
+
+            if (end_dir[11] == '.' && end_dir[12] == 'd')
+            {
+                std::cout << index << ": End of directory ";
+
+                std::string end_name(end_dir + 3);
+
+                if (end_name.length() < 10)
+                {
+                    end_name += ".d";
+                }
+
+                std::cout << end_name << std::endl;
+            }
+            else
+            {
+                fs.seekg(-14, std::ios::cur);
+            }
+
+            continue;
+        }
+
+        // std::cout << std::endl;
+        std::cout << fs.tellg() << ": ";
+
+        char name_buffer[11];
+        fs.read(name_buffer, 11);
+
+        std::string name(name_buffer);
+
+        // I would normally format this so everything is lined up nicely between 1 and 2 digit numbers, but that is almost as painful as reading in this file
+        // and I would like to retain what little of my sanity is left
+        switch (name_buffer[9])
+        {
+        case 'd':
+        {
+            std::cout << "Directory: " << name + ".d" << std::endl;
+
+            int size_start;
+            size_start = fs.tellg();
+
+            int dir_size;
+            fs.read(reinterpret_cast<char *>(&dir_size), sizeof(int));
+
+            std::cout << size_start << ": Directory " << name << " contains " << dir_size << (dir_size > 1 ? " files/directories" : " file/directory") << std::endl;
+            break;
+        }
+        case 'p':
+        {
+            std::cout << "Filename: " << name + ".p" << std::endl;
+            std::cout << "     Type:  Program" << std::endl;
+
+            int cpu_req;
+            int mem_req;
+
+            fs.read(reinterpret_cast<char *>(&cpu_req), sizeof(int));
+            fs.read(reinterpret_cast<char *>(&mem_req), sizeof(int));
+
+            std::cout << "     Contents: CPU Requirement:  " << cpu_req << ", Memory Requirement:  " << mem_req << std::endl;
+            break;
+        }
+        case 't':
+        {
+            std::cout << "Filename: " << name + ".t" << std::endl;
+            std::cout << "     Type: Text file" << std::endl;
+
+            int text_size;
+
+            fs.read(reinterpret_cast<char *>(&text_size), sizeof(int));
+
+            std::cout << fs.tellg() << ":  Size of text file: " << text_size << (text_size > 1 ? " bytes" : " byte") << std::endl;
+            std::cout << fs.tellg() << ":  Contents of text file:   ";
+
+            char text[text_size + 1];
+            text[text_size] = '\0';
+            fs.read(text, text_size);
+
+            std::cout << text << std::endl;
+
+            break;
+        }
+        default:
+            break;
+        }
     }
 }

@@ -139,7 +139,7 @@ int main(int argc, char **argv)
                 // consume newline
                 std::cin.ignore();
                 getline(std::cin, input);
-                file.contents.set<TextFile>(TextFile{input});
+                file.contents.set<TextFile>(TextFile{input, (int)input.length()});
             }
             else
             {
@@ -164,6 +164,9 @@ int main(int argc, char **argv)
         else if (input == "quit")
         {
             fs.close_dirs();
+
+            fs.print();
+
             close = true;
         }
         else
