@@ -13,14 +13,13 @@ int main(int argc, char **argv)
 
     Filesystem fs(std::string(argv[1]) + ".dat");
 
-    // create file if it doesn't already exist
-    if (!std::ifstream(fs.name).good())
-    {
-        std::ofstream(fs.name).close();
+    // Create filesystem if it doesn't already exist,
+    // otherwise we'll overwrite the filesystem
+    std::ofstream(fs.name, std::ios::trunc).close();
 
-        std::string root = "root";
-        fs.create_dir(root);
-    }
+    // Create root directory as first entry
+    std::string root = "root";
+    fs.create_dir(root);
 
     std::cout << "Welcome to RUFS. Enter one of the following commands: " << std::endl;
     std::cout << "CreateDir, CreateFile, EndDir, or quit" << std::endl;
