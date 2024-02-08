@@ -27,6 +27,7 @@ int main(int argc, char **argv)
 
     bool close = false;
 
+    // Main REPL loop
     std::string input;
     while (!close)
     {
@@ -61,6 +62,7 @@ int main(int argc, char **argv)
         {
             bool bad_filename = false;
 
+            // Verify file name
             do
             {
                 // reset each loop
@@ -90,8 +92,6 @@ int main(int argc, char **argv)
 
             // Good filename now, guaranteed to be text or program
 
-            // Filable::Type fileType = (input.back() == 't' ? Filable::Type::Text : Filable::Type::Program);
-
             Filable file;
             if (input.back() == 't')
             {
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
                 file.contents.set<ProgramFile>();
             }
 
-            //
+            // Set filename to default state
             for (int i = 0; i < 8; i++)
             {
                 file.name[i] = '\0';
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
                 file.name[i] = input[i];
             }
 
+            // Set extension
             file.name[8] = '.';
-
             if (file.contents.is<TextFile>())
             {
 
@@ -139,6 +139,7 @@ int main(int argc, char **argv)
                 // consume newline
                 std::cin.ignore();
                 getline(std::cin, input);
+
                 file.contents.set<TextFile>(TextFile{input, (int)input.length()});
             }
             else
@@ -163,6 +164,7 @@ int main(int argc, char **argv)
         }
         else if (input == "quit")
         {
+            // Make sure to close any open directories
             fs.close_dirs();
 
             fs.print();

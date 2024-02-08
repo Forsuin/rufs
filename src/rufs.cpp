@@ -37,11 +37,13 @@ void Filesystem::create_dir(const std::string &dir_name)
 {
     Filable new_dir;
 
+    // Fill directory name with nulls
     for (char &i : new_dir.name)
     {
         i = '\0';
     }
 
+    // copy over file name
     for (unsigned int i = 0; i < dir_name.length(); i++)
     {
         new_dir.name[i] = dir_name[i];
@@ -80,10 +82,7 @@ void Filesystem::close_dirs()
     }
 }
 
-void print_directory()
-{
-}
-
+// I think this should be seperated out into seperate files, but I'm tired of writing this abomination
 void Filesystem::print()
 {
     std::cout << "Binary file structure is: " << std::endl;
@@ -101,7 +100,6 @@ void Filesystem::print()
 
         if (fs.peek() == 'E')
         {
-            // TODO: Handle end of directories
             char end_dir[14];
 
             int index = fs.tellg();

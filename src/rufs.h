@@ -5,15 +5,6 @@
 
 #include "variant.h"
 
-/*
- * In Rust I would have made this an enum and added a write member function
- *
- * I was going to write a c++11 implementation of std::variant but that
- * didn't work out since c++11 doesn't support template initializer lists or
- * something like that and this was easier since I'm only going to have 3
- * things that can get written to disk
- */
-
 struct ProgramFile
 {
     int cpu_req;
@@ -38,6 +29,7 @@ struct Filable
     variant<ProgramFile, TextFile, Directory> contents;
 };
 
+// For keeping track of where in binary file directory content count is
 struct DirIndexPair
 {
     Filable dir;
